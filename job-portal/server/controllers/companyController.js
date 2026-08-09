@@ -6,35 +6,94 @@ import Job from "../models/Job.js";
 import JobApplication from "../models/JobApplication.js";
 
 // Register a new company
+// export const registerCompany = async (req, res) => {
+
+//     const { name, email, password } = req.body
+
+//     const imageFile = req.file;
+
+//     if (!name || !email || !password || !imageFile) {
+//         return res.json({ success: false, message: "Missing Details" })
+//     }
+
+//     try {
+
+//         const companyExists = await Company.findOne({ email })
+
+//         if (companyExists) {
+//             return res.json({ success: false, message: 'Company already registered' })
+//         }
+
+//         const salt = await bcrypt.genSalt(10)
+//         const hashPassword = await bcrypt.hash(password, salt)
+
+//         const imageUpload = await cloudinary.uploader.upload(imageFile.path)
+
+//         const company = await Company.create({
+//             name,
+//             email,
+//             password: hashPassword,
+//             image: imageUpload.secure_url
+//         })
+
+//         res.json({
+//             success: true,
+//             company: {
+//                 _id: company._id,
+//                 name: company.name,
+//                 email: company.email,
+//                 image: company.image
+//             },
+//             token: generateToken(company._id)
+//         })
+
+//     } catch (error) {
+//         res.json({ success: false, message: error.message })
+//     }
+// }
+
 export const registerCompany = async (req, res) => {
 
-    const { name, email, password } = req.body
-
+    const { name, email, password } = req.body;
     const imageFile = req.file;
 
     if (!name || !email || !password || !imageFile) {
-        return res.json({ success: false, message: "Missing Details" })
+        return res.json({
+            success: false,
+            message: "Missing Details"
+        });
     }
 
     try {
 
-        const companyExists = await Company.findOne({ email })
+        const companyExists = await Company.findOne({ email });
 
         if (companyExists) {
-            return res.json({ success: false, message: 'Company already registered' })
+            return res.json({
+                success: false,
+                message: "Company already registered"
+            });
         }
 
-        const salt = await bcrypt.genSalt(10)
-        const hashPassword = await bcrypt.hash(password, salt)
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
 
-        const imageUpload = await cloudinary.uploader.upload(imageFile.path)
+        console.log("Uploading company logo to Cloudinary...");
+        console.log("File:", imageFile.path);
+
+        const imageUpload = await cloudinary.uploader.upload(
+            imageFile.path
+        );
+
+        console.log("Cloudinary upload successful:");
+        console.log(imageUpload.secure_url);
 
         const company = await Company.create({
             name,
             email,
             password: hashPassword,
             image: imageUpload.secure_url
-        })
+        });
 
         res.json({
             success: true,
@@ -45,12 +104,23 @@ export const registerCompany = async (req, res) => {
                 image: company.image
             },
             token: generateToken(company._id)
-        })
+        });
 
     } catch (error) {
-        res.json({ success: false, message: error.message })
+
+        console.log("========== COMPANY REGISTER ERROR ==========");
+        console.log("Message:", error.message);
+        console.log("Name:", error.name);
+        console.log("HTTP Code:", error.http_code);
+        console.log("Full Error:", error);
+        console.log("============================================");
+
+        res.json({
+            success: false,
+            message: error.message
+        });
     }
-}
+};
 
 // Login Company
 export const loginCompany = async (req, res) => {

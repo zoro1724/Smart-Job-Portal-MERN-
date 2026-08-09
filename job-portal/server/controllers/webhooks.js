@@ -20,7 +20,25 @@ export const clerkWebhooks = async (req, res) => {
 
         // Switch Cases for differernt Events
         switch (type) {
+            // case 'user.created': {
+
+            //     const userData = {
+            //         _id: data.id,
+            //         email: data.email_addresses[0].email_address,
+            //         name: data.first_name + " " + data.last_name,
+            //         image: data.image_url,
+            //         resume: ''
+            //     }
+            //     await User.create(userData)
+            //     res.json({})
+            //     break;
+            // }
+
             case 'user.created': {
+
+                console.log("USER CREATED EVENT RECEIVED");
+                console.log("Clerk User ID:", data.id);
+                console.log("Email:", data.email_addresses?.[0]?.email_address);
 
                 const userData = {
                     _id: data.id,
@@ -29,8 +47,14 @@ export const clerkWebhooks = async (req, res) => {
                     image: data.image_url,
                     resume: ''
                 }
-                await User.create(userData)
-                res.json({})
+
+                console.log("USER DATA TO SAVE:", userData);
+
+                const newUser = await User.create(userData);
+
+                console.log("USER SAVED TO MONGODB:", newUser);
+
+                res.json({ success: true });
                 break;
             }
 
@@ -55,6 +79,11 @@ export const clerkWebhooks = async (req, res) => {
         }
 
     } catch (error) {
-        res.json({ success: false, message: error.message })
-    }
+    console.error("WEBHOOK ERROR:", error);
+
+    res.status(400).json({
+        success: false,
+        message: error.message
+    });
+}
 }
