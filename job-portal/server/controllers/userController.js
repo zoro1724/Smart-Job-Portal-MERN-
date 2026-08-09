@@ -88,25 +88,54 @@ export const getUserJobApplications = async (req, res) => {
 // Update User Resume
 export const updateUserResume = async (req, res) => {
     try {
-
         const userId = req.auth.userId
-
         const resumeFile = req.file
+
+        console.log("USER ID:", userId)
+        console.log("RESUME FILE:", resumeFile)
 
         const userData = await User.findById(userId)
 
-        if (resumeFile) {
-            const resumeUpload = await cloudinary.uploader.upload(resumeFile.path)
-            userData.resume = resumeUpload.secure_url
+        if (!userData) {
+            return res.json({
+                success: false,
+                message: "User Not Found"
+            })
         }
 
-        await userData.save()
+        if (!resumeFile) {
+            return res.json({
+                success: false,
+                message: "No resume file received"
+            })
+        }
 
-        return res.json({ success: true, message: 'Resume Updated' })
+        const resumeUpload = await cloudinary.uploader.upload(resumeFile.path, {
+    resource_type: 'raw'
+})
 
-    } catch (error) {
+        console.log("CLOUDINARY URL:", resumeUpload.secure_url)
 
-        res.json({ success: false, message: error.message })
+        userData.resume = resumeUpload.secure_url
 
-    }
+            await userData.save()
+
+    console.log("SAVED RESUME:", userData.resume)
+
+    return res.json({
+        success: true,
+        message: 'Resume Updated',
+        resume: userData.resume
+    })
+
+} catch (error) {
+    console.error("RESUME ERROR FULL:", error)
+    console.error("RESUME ERROR MESSAGE:", error.message)
+
+    res.json({
+        success: false,
+        message: error.message
+    })
+}
+    
 }

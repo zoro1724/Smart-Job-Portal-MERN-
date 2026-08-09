@@ -17,16 +17,49 @@ export const getJobs = async (req, res) => {
 }
 
 // Get Single Job Using JobID
+// export const getJobById = async (req, res) => {
+//     try {
+
+//         const { id } = req.params
+
+//         const job = await Job.findById(id)
+//             .populate({
+//                 path: 'companyId',
+//                 select: '-password'
+//             })
+
+//         if (!job) {
+//             return res.json({
+//                 success: false,
+//                 message: 'Job not found'
+//             })
+//         }
+
+//         res.json({
+//             success: true,
+//             job
+//         })
+
+//     } catch (error) {
+//         res.json({ success: false, message: error.message })
+//     }
+// }
+
 export const getJobById = async (req, res) => {
     try {
 
         const { id } = req.params
+
+        console.log("Job ID:", id)
+        console.log("MongoDB readyState:", Job.db.readyState)
 
         const job = await Job.findById(id)
             .populate({
                 path: 'companyId',
                 select: '-password'
             })
+
+        console.log("Job found:", !!job)
 
         if (!job) {
             return res.json({
@@ -41,6 +74,10 @@ export const getJobById = async (req, res) => {
         })
 
     } catch (error) {
-        res.json({ success: false, message: error.message })
+        console.log("GET JOB BY ID ERROR:", error)
+        res.json({
+            success: false,
+            message: error.message
+        })
     }
 }
