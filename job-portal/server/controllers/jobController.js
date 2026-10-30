@@ -2,17 +2,54 @@ import Job from "../models/Job.js"
 
 
 
+// // Get All Jobs
+// export const getJobs = async (req, res) => {
+//     try {
+
+//         const jobs = await Job.find({ visible: true })
+//             .populate({ path: 'companyId', select: '-password' })
+
+//         res.json({ success: true, jobs })
+
+//     } catch (error) {
+//         res.json({ success: false, message: error.message })
+//     }
+// }
+
 // Get All Jobs
 export const getJobs = async (req, res) => {
     try {
 
+        // Check original company references
+        const rawJobs = await Job.find({ visible: true })
+            .select('_id companyId')
+
+        console.log("Raw Job References:", rawJobs)
+
+        // Populate company details
         const jobs = await Job.find({ visible: true })
-            .populate({ path: 'companyId', select: '-password' })
+            .populate({
+                path: 'companyId',
+                select: '-password'
+            })
+
+        // Check populated data
+        jobs.forEach(job => {
+            console.log({
+                jobId: job._id,
+                companyId: job.companyId?._id || null,
+                companyImage: job.companyId?.image || null
+            })
+        })
 
         res.json({ success: true, jobs })
 
     } catch (error) {
-        res.json({ success: false, message: error.message })
+        console.log("GET JOBS ERROR:", error)
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
     }
 }
 

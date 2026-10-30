@@ -1,3 +1,4 @@
+
 import { useContext, useEffect, useState } from 'react'
 import moment from 'moment'
 import Footer from '../components/Footer'
@@ -99,10 +100,18 @@ const Applications = () => {
 
                                 <input
                                     id="resumeUpload"
-                                    onChange={(e) =>
-                                        setResume(e.target.files[0])
-                                    }
-                                    accept="application/pdf"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0]
+
+                                        if (file && file.type !== "application/pdf") {
+                                            toast.error("Please select a PDF file")
+                                            e.target.value = ""
+                                            return
+                                        }
+
+                                        setResume(file)
+                                    }}
+                                    accept=".pdf,application/pdf"
                                     type="file"
                                     hidden
                                 />
@@ -123,7 +132,7 @@ const Applications = () => {
                                 <a
                                     href={userData.resume}
                                     target="_blank"
-                                    rel="noreferrer"
+                                    rel="noopener noreferrer"
                                     className="text-blue-600 underline"
                                 >
                                     View Resume
@@ -141,7 +150,6 @@ const Applications = () => {
                         )}
 
                     </div>
-
 
                     {/* Applied Jobs */}
                     <div>
@@ -185,7 +193,7 @@ const Applications = () => {
                                     {userApplications.map((job, index) => (
 
                                         <tr
-                                            key={index}
+                                            key={job._id || index}
                                             className="border-b"
                                         >
 

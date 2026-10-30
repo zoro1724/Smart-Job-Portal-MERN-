@@ -88,54 +88,56 @@ export const getUserJobApplications = async (req, res) => {
 // Update User Resume
 export const updateUserResume = async (req, res) => {
     try {
-        const userId = req.auth.userId
-        const resumeFile = req.file
-
-        console.log("USER ID:", userId)
-        console.log("RESUME FILE:", resumeFile)
-
-        const userData = await User.findById(userId)
-
-        if (!userData) {
-            return res.json({
-                success: false,
-                message: "User Not Found"
-            })
-        }
+        const userId = req.auth.userId;
+        const resumeFile = req.file;
 
         if (!resumeFile) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
                 message: "No resume file received"
-            })
+            });
         }
 
-        const resumeUpload = await cloudinary.uploader.upload(resumeFile.path, {
-    resource_type: 'raw'
-})
+        const userData = await User.findById(userId);
 
-        console.log("CLOUDINARY URL:", resumeUpload.secure_url)
+        if (!userData) {
+            return res.status(404).json({
+                success: false,
+                message: "User Not Found"
+            });
+        }
 
-        userData.resume = resumeUpload.secure_url
+        const resumeUpload = await cloudinary.uploader.upload(
+            resumeFile.path,
+            {
+                resource_type: "raw",
+                use_filename: true,
+                unique_filename: true,
+                type: "upload"
+            }
+        );
 
-            await userData.save()
+        console.log("Original filename:", resumeFile.originalname);
+        console.log("Uploaded URL:", resumeUpload.secure_url);
+        console.log("Public ID:", resumeUpload.public_id);
+        console.log("Resource type:", resumeUpload.resource_type);
+        console.log("Format:", resumeUpload.format);
 
-    console.log("SAVED RESUME:", userData.resume)
+        userData.resume = resumeUpload.secure_url;
+        await userData.save();
 
-    return res.json({
-        success: true,
-        message: 'Resume Updated',
-        resume: userData.resume
-    })
+        return res.json({
+            success: true,
+            message: "Resume Updated",
+            resume: userData.resume
+        });
 
-} catch (error) {
-    console.error("RESUME ERROR FULL:", error)
-    console.error("RESUME ERROR MESSAGE:", error.message)
+    } catch (error) {
+        console.error("RESUME ERROR:", error);
 
-    res.json({
-        success: false,
-        message: error.message
-    })
-}
-    
-}
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

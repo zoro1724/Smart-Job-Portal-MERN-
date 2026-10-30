@@ -172,16 +172,72 @@ export const getCompanyData = async (req, res) => {
 
 }
 
-// Post New Job
+// // Post New Job
+// export const postJob = async (req, res) => {
+
+//     const { title, description, location, salary, level, category } = req.body
+
+//     const companyId = req.company._id
+
+//     try {
+
+//         const newJob = new Job({
+//             title,
+//             description,
+//             location,
+//             salary,
+//             companyId,
+//             date: Date.now(),
+//             level,
+//             category
+//         })
+
+//         await newJob.save()
+
+//         res.json({ success: true, newJob })
+
+//     } catch (error) {
+
+//         res.json({ success: false, message: error.message })
+
+//     }
+
+
+// }
+
+
 export const postJob = async (req, res) => {
-
-    const { title, description, location, salary, level, category } = req.body
-
-    const companyId = req.company._id
 
     try {
 
-        const newJob = new Job({
+        const {
+            title,
+            description,
+            location,
+            salary,
+            level,
+            category
+        } = req.body
+
+        const companyId = req.company?._id
+
+        if (!companyId) {
+            return res.status(401).json({
+                success: false,
+                message: "Company authentication required"
+            })
+        }
+
+        if (!title || !description || !location || !salary || !level || !category) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing job details"
+            })
+        }
+
+        console.log("Creating job for company:", companyId)
+
+        const newJob = await Job.create({
             title,
             description,
             location,
@@ -192,18 +248,25 @@ export const postJob = async (req, res) => {
             category
         })
 
-        await newJob.save()
+        console.log("Created Job:", newJob)
 
-        res.json({ success: true, newJob })
+        res.json({
+            success: true,
+            newJob
+        })
 
     } catch (error) {
 
-        res.json({ success: false, message: error.message })
+        console.log("POST JOB ERROR:", error)
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
 
     }
-
-
 }
+
 
 // Get Company Job Applicants
 export const getCompanyJobApplicants = async (req, res) => {
